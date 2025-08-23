@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Lihat Data</title>
+  <link rel="stylesheet" href="index.css" />
+  <style>
+    .card { background: white; color: #111; border-radius: 12px; padding: 16px; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f3f3f3; text-align: left; }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    input[type="password"] { padding: 8px; }
+    button { padding: 8px 12px; cursor: pointer; }
+  </style>
+</head>
+<body class="atas">
+  <h1>Admin — Data Submissions</h1>
+
+  <div class="card">
+    <div class="controls">
+      <input id="pwd" type="password" placeholder="Masukkan password admin" />
+      <button id="load">Lihat Data</button>
+      <button id="export">Export CSV</button>
+    </div>
+    <p id="status"></p>
+    <div style="overflow:auto">
+      <table id="tbl">
+        <thead>
+          <tr><th>ID</th><th>Nama</th><th>Usia</th><th>Email</th><th>Tujuan</th><th>Dikirim</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const tbody = document.querySelector('#tbl tbody');
+    document.getElementById('load').onclick = async () => {
+      const key = document.getElementById('pwd').value;
+      statusEl.textContent = 'Memuat...';
+      tbody.innerHTML = '';
+      try {
+        const res = await fetch('/api/list?key=' + encodeURIComponent(key));
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          statusEl.textContent = 'Gagal: ' + (body.error || res.statusText);
+          return;
+        }
+        const rows = await res.json();
+        statusEl.textContent = 'Total: ' + rows.length + ' entri';
+        for (const r of rows) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + r.id + '</td>' +
+                         '<td>' + (r.name ?? '') + '</td>' +
+                         '<td>' + (r.age ?? '') + '</td>' +
+                         '<td>' + (r.email ?? '') + '</td>' +
+                         '<td>' + (r.purpose ?? '') + '</td>' +
+                         '<td>' + new Date(r.created_at).toLocaleString() + '</td>';
+          tbody.appendChild(tr);
+        }
+      } catch (e) {
+        statusEl.textContent = 'Kesalahan jaringan';
+      }
+    };
+
+    document.getElementById('export').onclick = () => {
+      const rows = [...document.querySelectorAll('#tbl tr')].map(tr => [...tr.children].map(td => `"${td.textContent.replace(/"/g, '""')}"`).join(','));
+      const csv = rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'submissions.csv';
+      a.click();
+    };
+  </script>
+</body>
+</html>
