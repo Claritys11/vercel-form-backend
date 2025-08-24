@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
   }
 
   const key = (req.query && req.query.key) || req.headers['x-admin-key'];
-  if (!key || key !== process.env.ADMIN_PASSWORD) {
+  if (!key || key !== process.env.tes123) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
