@@ -75,7 +75,7 @@
             border: 1px solid #ccc;
             font-size: 16px;
         }
-        .aba {
+.aba {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1048,3 +1048,4 @@
   gap: 40px;
   margin: left;
 }
+
